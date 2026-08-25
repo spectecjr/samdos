@@ -32,9 +32,9 @@ command works:
 BOOT
 ```
 
-`BOOT` reads track 0 sector 1, finds a directory entry named `BOOT`, loads its first sector to &8000 and calls
-it. That sector is SAMDOS's own bootstrap, which reads the rest of itself in, claims a 16K page at the top of
-memory, tells the ROM a DOS is present, and sets the default device to drive 1.
+`BOOT` reads track 4 sector 1, looks for the text `BOOT` at offset `&100` (ignoring bits 5 and 7 of each character),
+loads its first sector to &8000 and calls it. That sector is SAMDOS's own bootstrap, which reads the rest of itself
+in, claims a 16K page at the top of memory, tells the ROM a DOS is present, and sets the default device to drive 1.
 
 Until then, every disk command gives *No DOS loaded* — the ROM has no disk code of its own at all.
 
@@ -199,14 +199,17 @@ Two mechanisms, and they are different:
 
 | | What it is | When it runs |
 |---|---|---|
-| A file named `BOOT` | The DOS itself | When you type `BOOT` |
+| The DOS file, which must be the first file written to the disk. | The DOS itself | When you type `BOOT` |
 | A file named `AUTO*` | Your program | Automatically, after the DOS has loaded |
 
-So a fully self-starting disk needs both: a copy of `SAMDOS2` renamed to `BOOT`, and your program saved with a
+So a fully self-starting disk needs both: a copy of `SAMDOS2`, and your program saved with a
 name starting `AUTO`.
 
+The DOS file must be written first to the disk, as its first sector must be the first data sector of the
+disk (Track 4, Sector 1, Side 1).
+
 ```basic
-COPY "d2:SAMDOS2" TO "d1:BOOT"
+COPY "d2:SAMDOS2" TO "d1:"
 SAVE "d1:AUTOSTART" LINE 10
 ```
 
