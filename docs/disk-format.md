@@ -246,9 +246,12 @@ which lays each file out contiguously.
 
 The ROM's `BOOT` command does not know what a DOS is. It does this (see the ROM's `docs/dos-and-extensions.md`):
 
-1. Read track 0 sector 1 and look for an entry named `BOOT`.
-2. Load the **first sector** of that file to &8000.
-3. Call it.
+1. Look from the end of the `ALLOCT` table for a free 16KiB page to load the DOS into, and marks it with `&60`.
+   (If it finds an existing DOS page (marked with `&60`, it'll use that instead).
+3. Read track 4 sector 1 and look for the text `BOOT` (bits 7 and 5 are ignored) 256-bytes
+   from the start of the sector.
+4. If this matches, the rest of the DOS is loaded, and then executed with the DOS paged in, at address `&8009`,
+   which complete initialization.
 
 Everything after that is the DOS's own doing. SAMDOS's boot sector is at the start of the image
 ([b.s](../annotated-src/b.s), `org gnd+&4000`) and:
